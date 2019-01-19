@@ -1,10 +1,11 @@
-__pycache__/
+__pycache__/*
 build/*
-curl_ftp.zip
 dist/*
-wx_test.spec
 http/*
 sftp/*
 ftp/*
 htdocs/*
+*.zip
 *.spec
+*.log
+*.exe
