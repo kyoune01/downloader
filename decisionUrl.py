@@ -47,9 +47,9 @@ class urlData():
             return psddic[0]
 
 
-async def convertUrlFormat(text, psdlist):
+async def convertUrlFormat(text, category, psdlist):
     urls = urlData(psdlist)
-    urls.category = 'http'
+    urls.category = category
     urls.url = text
     if urls.url is not None:
         return urls

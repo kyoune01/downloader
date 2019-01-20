@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     # 入力のフォーマット＋サーバー設定取得
     urldatas = []
-    checkTasks = [convertUrlFormat(t, psdList) for t in textList]
+    checkTasks = [convertUrlFormat(t, 'http', psdList) for t in textList]
     wait_coro = asyncio.wait(checkTasks, loop=None)
     res, _ = loop.run_until_complete(wait_coro)
     for future in res:
