@@ -16,7 +16,9 @@ def downloadHttp(urldata):
     path = urldata['path']
     host = urldata['host']
     scheme = urldata['scheme']
-    if urldata['psdlist'] == []:
+
+    # 変換処理＋DL
+    if urldata['psdlist'] == {}:
         # some.csv に登録のないURL
         url = urldata['url']
         res = requests.get(url, verify=False)
@@ -41,22 +43,21 @@ def downloadHttp(urldata):
         url = scheme + '://' + host + '/' + path
         res = requests.get(url, verify=False)
 
-    # request
+    # ステータスコードで結果の判断
     if res.status_code == 200:
         print(f'{url} sucusess')
-        saveResult(host, path, res.text, res.encoding)
+        saveResult(host, path, res.content)
         return urldata['url']
     elif '30' in str(res.status_code):
         if path == re.sub(r'https?://'+host, '', res.url):
             # http→https リダイレクトは許可
             print(f'{url} sucusess')
-            saveResult(host, path, res.text)
+            saveResult(host, path, res.content)
             return urldata['url']
         # リダイレクト
         print(f'{url} faild')
         raise ValueError(
             urldata['url'],
-            urldata['category'],
             f'redirect page to:{res.url}'
         )
     elif '40' in str(res.status_code):
@@ -64,7 +65,6 @@ def downloadHttp(urldata):
         print(f'{url} faild')
         raise ValueError(
             urldata['url'],
-            urldata['category'],
             f'page not found status:{res.status_code}'
         )
     else:
@@ -72,12 +72,11 @@ def downloadHttp(urldata):
         print(f'{url} faild')
         raise ValueError(
             urldata['url'],
-            urldata['category'],
             f'undefind error status:{res.status_code} url:{res.url}'
         )
 
 
-def saveResult(host, path, text, encoding='UTF-8'):
+def saveResult(host, path, value):
     # DL 成功
     filename = './http/' + host + path
     # ディレクトリがなければ作る
@@ -86,7 +85,7 @@ def saveResult(host, path, text, encoding='UTF-8'):
         os.makedirs(file_path)
     # パスにファイル名が含まれていない場合は適当につける
     if re.search(r'/$', filename) is not None:
-        filename += 'filenameNone.html'
+        filename += 'filenameNone'
     # 結果を保存
-    with open(filename, 'w', encoding=encoding) as f:
-        f.write(text)
+    with open(filename, 'wb') as f:
+        f.write(value)

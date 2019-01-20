@@ -1,5 +1,6 @@
 # config: UTF-8
 import asyncio
+import pyperclip
 from getConfig import getUrlList, getCsvConfig
 from decisionUrl import convertUrlFormat
 from ftpDownloader import downloader
@@ -52,7 +53,17 @@ if __name__ == "__main__":
             sucusess.append(result)
         except Exception as err:
             # 何かが起きた
-            error.append(err)
+            print(f'{err.args[0]} faild')
+            error.append('\n'.join(err.args))
             pass
-    print(sucusess)
-    print(error)
+
+    # error はクリップボードへコピー
+    pyperclip.copy('\n\n'.join(error))
+
+    # 入力を受けたら終了
+    print('\ndownload finish.')
+    print('\n********************')
+    print('paste Clip Board. you need Error Log')
+    print('********************')
+    print('\npush key and kill exe.')
+    inp = input()

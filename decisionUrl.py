@@ -42,7 +42,7 @@ class urlData():
         if len(psddic) is not 0 and psddic[0]['category'] == 'basic':
             psddic = [x for x in psddic if x['webroot'] in self.path]
         if len(psddic) is 0:
-            return []
+            return {}
         else:
             return psddic[0]
 
