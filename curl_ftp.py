@@ -40,6 +40,13 @@ if __name__ == "__main__":
     print('text load')
     print(f'all url count:{len(urldatas)}')
 
+    # count0 のときは終了
+    if len(urldatas) == 0:
+        print('\ndownload finish.')
+        print('push key and kill exe.')
+        inp = input()
+        exit()
+
     # ダウンロード処理
     sucusess = []
     error = []
@@ -62,8 +69,9 @@ if __name__ == "__main__":
 
     # 入力を受けたら終了
     print('\ndownload finish.')
-    print('\n********************')
-    print('paste Clip Board. you need Error Log')
-    print('********************')
+    print('')
+    print('**************************************')
+    print(' paste Clip Board. you need Error Log')
+    print('**************************************')
     print('\npush key and kill exe.')
     inp = input()

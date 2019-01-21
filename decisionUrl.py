@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 
 
 class urlData():
+
     def __init__(self, psdlist):
         self.category = ''
         self.psdlist = psdlist
@@ -38,9 +39,9 @@ class urlData():
             @param  string path    パス
             @return array  psddic  サーバー情報
         """
-        psddic = [x for x in self.psdlist if x['host'] == self.host]
-        if len(psddic) is not 0 and psddic[0]['category'] == 'basic':
-            psddic = [x for x in psddic if x['webroot'] in self.path]
+        psddic = [x for x in self.psdlist if x['domain'] == self.host]
+        if len(psddic) is not 0 and psddic[0]['scheme'] == 'basic':
+            psddic = [x for x in psddic if x['root'] in self.path]
         if len(psddic) is 0:
             return {}
         else:

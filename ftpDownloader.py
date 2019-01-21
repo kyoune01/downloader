@@ -1,10 +1,10 @@
 # config: UTF-8
-# from ftplib import FTP
 import urllib.request as URLLIB
 import re
 import os
 import asyncio
 import encodings.idna
+import time
 
 
 async def downloader(urldata):
@@ -15,25 +15,26 @@ async def downloader(urldata):
 
 
 def downloadFtp(urldata):
+    time.sleep(1)
     # some.csv に登録のないURLを弾く
-    if urldata['psdlist'] == {} or urldata['psdlist']['category'] != 'ftp':
+    if urldata['psdlist'] == {} or urldata['psdlist']['scheme'] != 'ftp':
         raise ValueError(
             urldata['url'],
             f'not Setting'
         )
 
     path = urldata['path']
-    host = urldata["psdlist"]["host"]
-    user = urldata["psdlist"]["user"]
-    psd = urldata["psdlist"]["psd"]
+    host = urldata["psdlist"]["domain"]
+    user = urldata["psdlist"]["id"]
+    psd = urldata["psdlist"]["pass"]
 
     ftppath = path
     if (
-        urldata['psdlist']['webroot'] != '/' and
-        not re.match(urldata['psdlist']['webroot'], path)
+        urldata['psdlist']['root'] != '/' and
+        not re.match(urldata['psdlist']['root'], path)
     ):
         # ドキュメントルートからのパスにする
-        ftppath = urldata['psdlist']['webroot'] + path
+        ftppath = urldata['psdlist']['root'] + path
 
     try:
         ret = URLLIB.urlopen(f'ftp://{user}:{psd}@{host}{ftppath}').read()
@@ -52,9 +53,13 @@ def saveResult(host, path, value):
     # DL 成功
     filename = './ftp/' + host + path
     # ディレクトリがなければ作る
-    file_path = os.path.dirname(filename)
-    if not os.path.exists(file_path):
-        os.makedirs(file_path)
+    try:
+        file_path = os.path.dirname(filename)
+        if not os.path.exists(file_path):
+            os.makedirs(file_path)
+    except Exception:
+        # エラーを握りつぶす
+        pass
     # 結果を保存
     with open(filename, 'wb') as f:
         f.write(value)
