@@ -4,7 +4,7 @@ import re
 
 
 def formatDataForFTP(urldatas):
-    tmpUrldatas = []
+    tmpurldatas = []
     serverlist = []
 
     # 受け取ったデータからサーバ情報を持たないデータを削除
@@ -13,7 +13,7 @@ def formatDataForFTP(urldatas):
         if urldata['psdlist'] == {}:
             continue
         # urldatasから直接削除すると正常にループしないため一時変数へ追加する
-        tmpUrldatas.append(urldata)
+        tmpurldatas.append(urldata)
         serverlist.append(urldata['psdlist'])
 
     # サーバ情報の重複を削除
@@ -22,11 +22,10 @@ def formatDataForFTP(urldatas):
     # サーバ情報へDL対象のパスを配列で追加
     for server in serverlist:
         # server は参照渡し
-        pathList = [x['path'] for x in tmpUrldatas if x[
+        values = [x['path'] for x in tmpurldatas if x[
             'psdlist']['domain'] == server['domain']]
         # 末尾が「/」で終わるURLは処理しない
-        pathList = [url for url in pathList if re.match(
-            r'[^\.]*/$', url) is None]
-        server['path'] = pathList if pathList else None
+        values = [val for val in values if re.match(r'[^\.]*/$', val) is None]
+        server['path'] = values if values else None
 
     return serverlist

@@ -4,6 +4,7 @@ import pyperclip
 from getConfig import getUrlList, getCsvConfig
 from decisionUrl import convertUrlFormat
 from ftpDownloader import downloader
+from formatURLData import formatDataForFTP
 
 
 if __name__ == "__main__":
@@ -38,18 +39,25 @@ if __name__ == "__main__":
             # テキストにURL以外が入った場合
             pass
     print('text load')
-    print(f'all url count:{len(urldatas)}')
 
     # count0 のときは終了
     if len(urldatas) == 0:
-        print('\ndownload finish.')
+        print('\nNone download file.')
         print('push key and kill exe.')
         inp = input()
         exit()
 
+    # 主キー：URL　→　主キー：サーバ　の形へ整形
+    urldatas = formatDataForFTP(urldatas)
+
+    # ダウンロード対象をカウント
+    # path <- (urldata <- urldatas)['path']
+    pathList = [path for urldata in urldatas for path in urldata['path']]
+    print(f'all download file:{len(pathList)}')
+
     # ダウンロード処理
-    sucusess = []
-    error = []
+    # sucusess = []
+    # error = []
     downloadTasks = [downloader(urldata) for urldata in urldatas]
     wait_coro = asyncio.wait(downloadTasks, loop=None)
     res, _ = loop.run_until_complete(wait_coro)
@@ -57,21 +65,22 @@ if __name__ == "__main__":
         try:
             # ここでエラーを吐かせる
             result = future.result()
-            sucusess.append(result)
+            # sucusess.append(result)
         except Exception as err:
+            print(err)
             # 何かが起きた
-            print(f'{err.args[0]} faild')
-            error.append('\n'.join(err.args))
+            # print(f'{err.args[0]} faild')
+            # error.append('\n'.join(err.args))
             pass
 
     # error はクリップボードへコピー
-    pyperclip.copy('\n\n'.join(error))
+    # pyperclip.copy('\n\n'.join(error))
 
     # 入力を受けたら終了
     print('\ndownload finish.')
     print('')
-    print('**************************************')
-    print(' paste Clip Board. you need Error Log')
-    print('**************************************')
+    # print('**************************************')
+    # print(' paste Clip Board. you need Error Log')
+    # print('**************************************')
     print('\npush key and kill exe.')
     inp = input()

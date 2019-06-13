@@ -1,65 +1,70 @@
 # config: UTF-8
-import urllib.request as URLLIB
-import re
-import os
 import asyncio
-import encodings.idna
 import time
+from ftplib import FTP
+import os
+import re
+
+
+async def __downloader(urldata):
+
+    try:
+        ftp = FTP(urldata['domain'], urldata['id'], passwd=urldata['pass'])
+        ftp.cwd(urldata['root'])
+    except Exception:
+        raise ValueError('not connection')
+
+    async def __run_request(path, urldata, ftp):
+        loop = asyncio.get_event_loop()
+        sem = asyncio.Semaphore(5)
+        async with sem:
+            return await loop.run_in_executor(None, __downloadFtp, path, urldata['domain'], ftp)
+
+    tasks = [__run_request(path, urldata, ftp) for path in urldata['path']]
+    return await asyncio.gather(*tasks)
 
 
 async def downloader(urldata):
-    loop = asyncio.get_event_loop()
-    sem = asyncio.Semaphore(5)
-    async with sem:
-        return await loop.run_in_executor(None, downloadFtp, urldata)
+    """
+    ダウンローダー
 
-
-def downloadFtp(urldata):
-    time.sleep(1)
-    # some.csv に登録のないURLを弾く
-    if urldata['psdlist'] == {} or urldata['psdlist']['scheme'] != 'ftp':
-        raise ValueError(
-            urldata['url'],
-            f'not Setting'
-        )
-
-    path = urldata['path']
-    host = urldata["psdlist"]["domain"]
-    user = urldata["psdlist"]["id"]
-    psd = urldata["psdlist"]["pass"]
-
-    ftppath = path
-    if (
-        urldata['psdlist']['root'] != '/' and
-        not re.match(urldata['psdlist']['root'], path)
-    ):
-        # ドキュメントルートからのパスにする
-        ftppath = urldata['psdlist']['root'] + path
-
+    @param  urldata {dict}
+        {'domain':'', 'id':'', 'pass':'', 'root':'', 'path':['path','path'...]}
+    @return result  {string}        -val encode
+    """
     try:
-        ret = URLLIB.urlopen(f'ftp://{user}:{psd}@{host}{ftppath}').read()
-    except Exception as e:
-        raise ValueError(
-            urldata['url'],
-            e.args[0]
-        )
-
-    print(f'{urldata["url"]} sucusess')
-    saveResult(host, path, ret)
-    return urldata['url']
-
-
-def saveResult(host, path, value):
-    # DL 成功
-    filename = './ftp/' + host + path
-    # ディレクトリがなければ作る
-    try:
-        file_path = os.path.dirname(filename)
-        if not os.path.exists(file_path):
-            os.makedirs(file_path)
+        ftp = FTP(urldata['domain'], urldata['id'], passwd=urldata['pass'])
+        ftp.cwd(urldata['root'])
     except Exception:
-        # エラーを握りつぶす
+        raise ValueError('not connection')
+
+    sem = asyncio.Semaphore(5)
+
+    async def __run_request(path, domain, ftp):
+        async with sem:
+            return await __downloadFtp(path, domain, ftp)
+
+    tasks = [__run_request(path, urldata['domain'], ftp)
+             for path in urldata['path']]
+    return await asyncio.gather(*tasks)
+
+
+async def __downloadFtp(path, domain, ftp):
+    await asyncio.sleep(1)
+
+    localPath = './ftp/' + domain + path
+
+    localDir = re.sub(r'[^/]*\.[^\.]*$', '', localPath[2:])
+    os.makedirs(localDir, exist_ok=True)
+
+    try:
+        print('start : ' + localPath)
+        with open(localPath, 'wb') as f:
+            # 対象ファイルをバイナリ転送モードで取得
+            ftp.retrbinary('RETR ' + path, f.write)
+        print('finish: ' + localPath)
+    except Exception as e:
         pass
-    # 結果を保存
-    with open(filename, 'wb') as f:
-        f.write(value)
+        # raise ValueError('not download')
+
+    return path
