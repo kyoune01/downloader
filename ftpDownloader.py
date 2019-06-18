@@ -26,13 +26,23 @@ async def downloader(urldata):
         async with sem:
             return await __downloadFtp(path, domain, ftp)
 
-    tasks = [__run_request(path, urldata['domain'], ftp)
-             for path in urldata['path']]
-    res = await asyncio.gather(*tasks)
-
+    loop = asyncio.get_event_loop()
+    downloadTasks = [__run_request(path, urldata['domain'], ftp)
+                     for path in urldata['path']]
+    wait_coro = asyncio.wait(downloadTasks, loop=None)
+    res, _ = loop.run_until_complete(wait_coro)
     # 接続はきちんと閉じる
     ftp.quit()
-    return res
+    success = []
+    error = []
+    for future in res:
+        try:
+            # ここでエラーを吐かせる
+            success.append(future.result())
+        except Exception as e:
+            error.append([e.args[0], e.args[1]])
+
+    return success, error
 
 
 async def __downloadFtp(path, domain, ftp):
@@ -42,7 +52,7 @@ async def __downloadFtp(path, domain, ftp):
     try:
         ftp.size(path)
     except Exception:
-        raise ValueError(path, f'file not found')
+        raise ValueError(path, 'file not found')
 
     # 保存先
     localPath = './ftp/' + domain + path

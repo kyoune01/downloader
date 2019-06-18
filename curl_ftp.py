@@ -56,7 +56,7 @@ if __name__ == "__main__":
     print(f'all download file:{len(pathList)}')
 
     # ダウンロード処理
-    sucusess = []
+    success = []
     error = []
     downloadTasks = [downloader(urldata) for urldata in urldatas]
     wait_coro = asyncio.wait(downloadTasks, loop=None)
@@ -64,12 +64,12 @@ if __name__ == "__main__":
     for future in res:
         try:
             # ここでエラーを吐かせる
-            result = future.result()
-            sucusess.append(result)
+            tmp1, tmp2 = future.result()
+            success.append(tmp1)
+            error.append('\n'.join(tmp2))
         except Exception as err:
             # 何かが起きた
             print(f'faild : {err.args[0]}')
-            error.append('\n'.join(err.args))
 
     # error はクリップボードへコピー
     pyperclip.copy('\n\n'.join(error))
