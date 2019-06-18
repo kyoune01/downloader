@@ -56,8 +56,8 @@ if __name__ == "__main__":
     print(f'all download file:{len(pathList)}')
 
     # ダウンロード処理
-    # sucusess = []
-    # error = []
+    sucusess = []
+    error = []
     downloadTasks = [downloader(urldata) for urldata in urldatas]
     wait_coro = asyncio.wait(downloadTasks, loop=None)
     res, _ = loop.run_until_complete(wait_coro)
@@ -65,22 +65,20 @@ if __name__ == "__main__":
         try:
             # ここでエラーを吐かせる
             result = future.result()
-            # sucusess.append(result)
+            sucusess.append(result)
         except Exception as err:
-            print(err)
             # 何かが起きた
-            # print(f'{err.args[0]} faild')
-            # error.append('\n'.join(err.args))
-            pass
+            print(f'faild : {err.args[0]}')
+            error.append('\n'.join(err.args))
 
     # error はクリップボードへコピー
-    # pyperclip.copy('\n\n'.join(error))
+    pyperclip.copy('\n\n'.join(error))
 
     # 入力を受けたら終了
     print('\ndownload finish.')
     print('')
-    # print('**************************************')
-    # print(' paste Clip Board. you need Error Log')
-    # print('**************************************')
+    print('**************************************')
+    print(' paste Clip Board. you need Error Log')
+    print('**************************************')
     print('\npush key and kill exe.')
     inp = input()

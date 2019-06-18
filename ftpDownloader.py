@@ -6,24 +6,6 @@ import os
 import re
 
 
-async def __downloader(urldata):
-
-    try:
-        ftp = FTP(urldata['domain'], urldata['id'], passwd=urldata['pass'])
-        ftp.cwd(urldata['root'])
-    except Exception:
-        raise ValueError('not connection')
-
-    async def __run_request(path, urldata, ftp):
-        loop = asyncio.get_event_loop()
-        sem = asyncio.Semaphore(5)
-        async with sem:
-            return await loop.run_in_executor(None, __downloadFtp, path, urldata['domain'], ftp)
-
-    tasks = [__run_request(path, urldata, ftp) for path in urldata['path']]
-    return await asyncio.gather(*tasks)
-
-
 async def downloader(urldata):
     """
     ダウンローダー
@@ -36,7 +18,7 @@ async def downloader(urldata):
         ftp = FTP(urldata['domain'], urldata['id'], passwd=urldata['pass'])
         ftp.cwd(urldata['root'])
     except Exception:
-        raise ValueError('not connection')
+        raise ValueError(urldata['domain'], f'not connection')
 
     sem = asyncio.Semaphore(5)
 
@@ -46,25 +28,36 @@ async def downloader(urldata):
 
     tasks = [__run_request(path, urldata['domain'], ftp)
              for path in urldata['path']]
-    return await asyncio.gather(*tasks)
+    res = await asyncio.gather(*tasks)
+
+    # 接続はきちんと閉じる
+    ftp.quit()
+    return res
 
 
 async def __downloadFtp(path, domain, ftp):
     await asyncio.sleep(1)
 
+    # ファイルの存在確認
+    try:
+        ftp.size(path)
+    except Exception:
+        raise ValueError(path, f'file not found')
+
+    # 保存先
     localPath = './ftp/' + domain + path
 
+    # ディレクトリが存在しなければつくる
     localDir = re.sub(r'[^/]*\.[^\.]*$', '', localPath[2:])
     os.makedirs(localDir, exist_ok=True)
 
+    # ダウンロード処理
     try:
-        print('start : ' + localPath)
         with open(localPath, 'wb') as f:
             # 対象ファイルをバイナリ転送モードで取得
             ftp.retrbinary('RETR ' + path, f.write)
-        print('finish: ' + localPath)
+        print('download : ' + path)
     except Exception as e:
-        pass
-        # raise ValueError('not download')
+        raise ValueError(path, f'faild download status:{e}')
 
     return path
