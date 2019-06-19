@@ -26,23 +26,13 @@ async def downloader(urldata):
         async with sem:
             return await __downloadFtp(path, domain, ftp)
 
-    loop = asyncio.get_event_loop()
-    downloadTasks = [__run_request(path, urldata['domain'], ftp)
-                     for path in urldata['path']]
-    wait_coro = asyncio.wait(downloadTasks, loop=None)
-    res, _ = loop.run_until_complete(wait_coro)
+    tasks = [__run_request(path, urldata['domain'], ftp)
+             for path in urldata['path']]
+    res = await asyncio.gather(*tasks, return_exceptions=True)
+
     # 接続はきちんと閉じる
     ftp.quit()
-    success = []
-    error = []
-    for future in res:
-        try:
-            # ここでエラーを吐かせる
-            success.append(future.result())
-        except Exception as e:
-            error.append([e.args[0], e.args[1]])
-
-    return success, error
+    return res
 
 
 async def __downloadFtp(path, domain, ftp):
@@ -52,7 +42,8 @@ async def __downloadFtp(path, domain, ftp):
     try:
         ftp.size(path)
     except Exception:
-        raise ValueError(path, 'file not found')
+        print(f'faild: {path}')
+        return {'url': path, 'status': False, 'message': 'file not found'}
 
     # 保存先
     localPath = './ftp/' + domain + path
@@ -66,8 +57,13 @@ async def __downloadFtp(path, domain, ftp):
         with open(localPath, 'wb') as f:
             # 対象ファイルをバイナリ転送モードで取得
             ftp.retrbinary('RETR ' + path, f.write)
-        print('download : ' + path)
     except Exception as e:
-        raise ValueError(path, f'faild download status:{e}')
+        print(f'faild: {path}')
+        return {
+            'url': path,
+            'status': False,
+            'message': f'faild download status:{e}'
+        }
 
-    return path
+    print(f'download: {path}')
+    return {'url': path, 'status': True, 'message': 'success'}

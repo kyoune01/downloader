@@ -56,22 +56,21 @@ if __name__ == "__main__":
     print(f'all download file:{len(pathList)}')
 
     # ダウンロード処理
-    success = []
-    error = []
+    result = []
     downloadTasks = [downloader(urldata) for urldata in urldatas]
     wait_coro = asyncio.wait(downloadTasks, loop=None)
     res, _ = loop.run_until_complete(wait_coro)
     for future in res:
         try:
             # ここでエラーを吐かせる
-            tmp1, tmp2 = future.result()
-            success.append(tmp1)
-            error.append('\n'.join(tmp2))
+            result = future.result()
         except Exception as err:
             # 何かが起きた
-            print(f'faild : {err.args[0]}')
+            print(f'faild: {err.args[0]}\nmessage: {err.args[1]}')
 
     # error はクリップボードへコピー
+    error = [x['url'] + '\n' + x['message'] for x in result if not x['status']]
+    error = list(set(error))
     pyperclip.copy('\n\n'.join(error))
 
     # 入力を受けたら終了
