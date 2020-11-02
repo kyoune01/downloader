@@ -1,8 +1,6 @@
 # config: UTF-8
-import wx
 import csv
-
-app = wx.App()
+import logging
 
 
 async def getUrlList():
@@ -11,11 +9,12 @@ async def getUrlList():
         with open("list.txt", "rb") as f:
             items = f.read()
             urls = items.decode('utf-8').split()
-        if urls is None:
-            wx.MessageBox(u'urls is none')
+        if urls == []:
+            logging.error(u'urls is none')
+            logging.error(u'plz write list.txt to url for download target')
             exit()
     except Exception:
-        wx.MessageBox(u'list.txt is none')
+        logging.error(u'list.txt is none')
         exit()
     return urls
 
@@ -32,9 +31,9 @@ async def getCsvConfig():
                     dictmp[col] = row[index]
                 psdlist.append(dictmp)
         if psdlist is None:
-            wx.MessageBox(u'some.csv read error')
+            logging.error(u'some.csv read error')
             exit()
     except Exception:
-        wx.MessageBox(u'some.csv is none')
+        logging.error(u'some.csv is none')
         exit()
     return psdlist

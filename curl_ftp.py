@@ -1,6 +1,6 @@
 # config: UTF-8
 import asyncio
-import pyperclip
+import logging
 from getConfig import getUrlList, getCsvConfig
 from decisionUrl import convertUrlFormat
 from ftpDownloader import downloader
@@ -54,6 +54,7 @@ if __name__ == "__main__":
     # path <- (urldata <- urldatas)['path']
     pathList = [path for urldata in urldatas for path in urldata['path']]
     print(f'all download file:{len(pathList)}')
+    print('')
 
     # ダウンロード処理
     result = []
@@ -75,13 +76,11 @@ if __name__ == "__main__":
            for x in result if not x['status']]
     error.extend(tmp)
     error = list(set(error))
-    pyperclip.copy('\n\n'.join(error))
+    if error != []:
+        logging.error(' '.join(error))
 
     # 入力を受けたら終了
-    print('\ndownload finish.')
     print('')
-    print('**************************************')
-    print(' paste Clip Board. you need Error Log')
-    print('**************************************')
-    print('\npush key and kill exe.')
+    print('Exit the program')
+    print('push key and kill exe')
     inp = input()

@@ -37,9 +37,10 @@ async def downloader(urldata):
 async def __downloaderFTP(domain, user, passwd, root, pathList):
     # 接続開始
     try:
+        print(domain, user, passwd)
         client = FTP(domain, user, passwd=passwd)
     except Exception:
-        raise ValueError(domain, 'not connection')
+        raise ValueError(domain, 'failed connection')
 
     sem = asyncio.Semaphore(5)
 

@@ -40,9 +40,9 @@ class urlData():
             @return array  psddic  サーバー情報
         """
         psddic = [x for x in self.psdlist if x['domain'] == self.host]
-        if len(psddic) is not 0 and psddic[0]['scheme'] == 'basic':
+        if len(psddic) != 0 and psddic[0]['scheme'] == 'basic':
             psddic = [x for x in psddic if x['root'] in self.path]
-        if len(psddic) is 0:
+        if len(psddic) == 0:
             return {}
         else:
             return psddic[0]
@@ -52,7 +52,7 @@ async def convertUrlFormat(text, category, psdlist):
     urls = urlData(psdlist)
     urls.category = category
     urls.url = text
-    if urls.url is not None:
+    if urls.url != None:
         return urls
     else:
         raise ValueError('error')

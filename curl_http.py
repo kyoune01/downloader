@@ -1,6 +1,6 @@
 # config: UTF-8
 import asyncio
-import pyperclip
+import logging
 from getConfig import getUrlList, getCsvConfig
 from decisionUrl import convertUrlFormat
 from httpDownloader import downloader
@@ -65,13 +65,11 @@ if __name__ == "__main__":
             pass
 
     # error はクリップボードへコピー
-    pyperclip.copy('\n\n'.join(error))
+    if error != []:
+        logging.error(' '.join(error))
 
     # 入力を受けたら終了
-    print('\ndownload finish.')
     print('')
-    print('**************************************')
-    print(' paste Clip Board. you need Error Log')
-    print('**************************************')
-    print('\npush key and kill exe.')
+    print('Exit the program')
+    print('push key and kill exe')
     inp = input()
