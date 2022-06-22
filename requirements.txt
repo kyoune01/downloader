@@ -5,7 +5,7 @@ cffi==1.14.3
 chardet==3.0.4
 cryptography==3.2.1
 idna==2.10
-numpy==1.19.3
+numpy==1.22.0
 paramiko==2.7.2
 Pillow==8.0.1
 pycparser==2.20
